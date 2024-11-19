@@ -1,212 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ramayana Open World Game</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
-            transition: background 1s ease;
-        }
-        #game-container {
-            width: 95%;
-            max-width: 800px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        #story-text {
-            font-size: 1.2em;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-        .choices {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        button {
-            background-color: #d88f40;
-            color: #fff;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        button:hover {
-            background-color: #b36d27;
-            transform: scale(1.05);
-        }
-        #menu {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-    </style>
-</head>
-<body>
-    <div id="menu">
-        <button onclick="showMenu()">Menu</button>
-    </div>
-    <div id="game-container">
-        <div id="story-text">Welcome to the open world of the Ramayana. Your journey begins now...</div>
-        <div id="dialogue"></div>
-        <div class="choices">
-            <button onclick="exploreArea()">Explore Nearby Area</button>
-            <button onclick="viewMap()">View Map</button>
-        </div>
-    </div>
-
-    <audio id="click-sound" src="https://freesound.org/data/previews/522/522264_1319205-lq.mp3"></audio>
-    <audio id="background-music" loop>
-        <source src="https://freesound.org/data/previews/202/202122_1697304-lq.mp3" type="audio/mpeg">
-    </audio>
-
-    <script>
-        const areas = [
-            {
-                name: "Forest of Chitrakoot",
-                description: "A dense forest filled with wildlife and a serene riverbank. You may encounter Sages here.",
-                background: "linear-gradient(to bottom, #90ee90, #006400)",
-                dialogues: [
-                    "A sage greets you: 'Welcome, Prince Rama. How can I help you on your journey?'",
-                    "You hear the rustling of leaves. Could it be a demon or just the wind?"
-                ],
-                actions: ["Rest at the riverbank", "Search for herbs", "Meditate under a tree"]
-            },
-            {
-                name: "Lanka",
-                description: "The island kingdom of Ravana. It is heavily guarded and dangerous.",
-                background: "linear-gradient(to bottom, #ff6347, #8b0000)",
-                dialogues: [
-                    "A guard spots you: 'Halt! Who dares enter Lanka?'",
-                    "You see the golden palace of Ravana shining in the distance."
-                ],
-                actions: ["Sneak into the palace", "Challenge a guard", "Find Sita"]
-            },
-            {
-                name: "Ayodhya",
-                description: "The prosperous kingdom of Rama. People are joyous and welcoming.",
-                background: "linear-gradient(to bottom, #ffd700, #ff8c00)",
-                dialogues: [
-                    "A villager bows to you: 'Prince Rama, when will you return to the throne?'",
-                    "You hear the songs of celebration as you walk through the streets."
-                ],
-                actions: ["Speak with the villagers", "Visit the palace", "Rest at the temple"]
-            }
+        // Initialize variables
+        let currentCharacter = null;
+        let enemies = [
+            { name: "Rakshasa", health: 100, attack: 15 },
+            { name: "Soldier", health: 80, attack: 10 },
+            { name: "Demon", health: 120, attack: 20 },
         ];
+        let progress = localStorage.getItem("gameProgress")
+            ? JSON.parse(localStorage.getItem("gameProgress"))
+            : { level: 1, character: null };
 
-        let exploredAreas = [];
-        let currentArea = null;
+        function startGame() {
+            playSound();
+            document.getElementById("game-container").style.display = "none";
+            document.getElementById("character-select").style.display = "block";
+        }
+
+        function selectCharacter(character) {
+            playSound();
+            currentCharacter = character;
+            alert(`${character} selected!`);
+            progress.character = character;
+            saveProgress();
+            document.getElementById("character-select").style.display = "none";
+            document.getElementById("gameplay").style.display = "block";
+            startMusic();
+        }
+
+        function explore() {
+            playSound();
+            alert("You explore the land and uncover new secrets...");
+            progress.level += 1;
+            saveProgress();
+        }
+
+        function fight() {
+            playSound();
+            const enemy = enemies[Math.floor(Math.random() * enemies.length)];
+            alert(`${currentCharacter} is fighting a ${enemy.name}!`);
+            // Add simple combat logic
+            let characterHealth = 100;
+            let enemyHealth = enemy.health;
+            while (characterHealth > 0 && enemyHealth > 0) {
+                enemyHealth -= Math.floor(Math.random() * 20) + 10; // Random damage
+                if (enemyHealth <= 0) break;
+                characterHealth -= enemy.attack;
+            }
+
+            if (characterHealth > 0) {
+                alert("You defeated the enemy!");
+            } else {
+                alert("You lost the battle. Restarting from checkpoint...");
+                loadProgress();
+            }
+        }
+
+        function useSkill() {
+            playSound();
+            const skills = {
+                Arjuna: "Divine Arrow",
+                Bhima: "Superhuman Strength",
+                Karna: "Flaming Spear",
+            };
+            alert(`${currentCharacter} used ${skills[currentCharacter] || "a special skill"}!`);
+        }
+
+        function saveProgress() {
+            localStorage.setItem("gameProgress", JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            if (progress.character) {
+                currentCharacter = progress.character;
+                alert(`Welcome back, ${currentCharacter}. Resuming from level ${progress.level}.`);
+                document.getElementById("game-container").style.display = "none";
+                document.getElementById("character-select").style.display = "none";
+                document.getElementById("gameplay").style.display = "block";
+                startMusic();
+            }
+        }
 
         function playSound() {
-            const sound = document.getElementById("click-sound");
-            sound.currentTime = 0;
-            sound.play();
+            const clickSound = document.getElementById("click-sound");
+            clickSound.currentTime = 0;
+            clickSound.play();
         }
 
-        function exploreArea() {
-            playSound();
-            const randomIndex = Math.floor(Math.random() * areas.length);
-            currentArea = areas[randomIndex];
-            document.body.style.background = currentArea.background;
-            document.getElementById("story-text").textContent = 
-                `You arrive at ${currentArea.name}. ${currentArea.description}`;
-            
-            document.getElementById("dialogue").textContent = 
-                currentArea.dialogues[Math.floor(Math.random() * currentArea.dialogues.length)];
-            
-            const actions = currentArea.actions
-                .map(action => `<button onclick="performAction('${action}')">${action}</button>`)
-                .join("");
-
-            document.querySelector(".choices").innerHTML = `
-                ${actions}
-                <button onclick="exploreArea()">Explore Another Area</button>
-                <button onclick="viewMap()">View Map</button>
-            `;
-
-            saveCheckpoint(currentArea.name);
-            if (!exploredAreas.includes(currentArea.name)) exploredAreas.push(currentArea.name);
-        }
-
-        function performAction(action) {
-            alert(`You chose to: ${action}`);
-            exploreArea();
-        }
-
-        function viewMap() {
-            playSound();
-            const mapText = exploredAreas.length
-                ? `You have explored: ${exploredAreas.join(", ")}.`
-                : "You haven't explored any areas yet.";
-
-            document.getElementById("story-text").textContent = mapText;
-            document.querySelector(".choices").innerHTML = `
-                <button onclick="exploreArea()">Explore Another Area</button>
-            `;
-        }
-
-        function saveCheckpoint(areaName) {
-            localStorage.setItem("ramayanaOpenWorldCheckpoint", areaName);
-        }
-
-        function loadCheckpoint() {
-            const lastArea = localStorage.getItem("ramayanaOpenWorldCheckpoint");
-            if (lastArea) {
-                const area = areas.find(a => a.name === lastArea);
-                if (area) {
-                    currentArea = area;
-                    exploredAreas.push(area.name);
-                    exploreArea();
-                }
-            } else {
-                exploreArea();
-            }
+        function startMusic() {
+            const bgMusic = document.getElementById("background-music");
+            bgMusic.play();
         }
 
         function showMenu() {
-            const options = areas.map(area => `<button onclick="jumpToArea('${area.name}')">${area.name}</button>`).join("");
-            document.querySelector(".choices").innerHTML = `
-                ${options}
-                <button onclick="exploreArea()">Back to Game</button>
-            `;
+            alert(`Current Character: ${currentCharacter}\nLevel: ${progress.level}`);
         }
 
-        function jumpToArea(areaName) {
-            playSound();
-            const area = areas.find(a => a.name === areaName);
-            if (area) {
-                currentArea = area;
-                exploreArea();
-            }
-        }
-
-        // Initialize
-        loadCheckpoint();
-        document.getElementById("background-music").play();
+        // Auto-load progress on page load
+        window.onload = loadProgress;
     </script>
 </body>
 </html>
