@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ramayan By Rajveer</title>
+    <title>Ramayana Open World Game</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom, #f7e9d7, #d8a764);
-            color: #333;
             margin: 0;
             padding: 0;
             display: flex;
@@ -17,15 +15,15 @@
             justify-content: center;
             min-height: 100vh;
             overflow: hidden;
+            transition: background 1s ease;
         }
         #game-container {
             width: 95%;
             max-width: 800px;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.9);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            animation: fadeIn 1s;
         }
         #story-text {
             font-size: 1.2em;
@@ -51,10 +49,10 @@
             background-color: #b36d27;
             transform: scale(1.05);
         }
-        #dialogue {
-            font-style: italic;
-            margin: 10px 0 20px 0;
-            color: #555;
+        #menu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
         }
         @keyframes fadeIn {
             from {
@@ -69,6 +67,9 @@
     </style>
 </head>
 <body>
+    <div id="menu">
+        <button onclick="showMenu()">Menu</button>
+    </div>
     <div id="game-container">
         <div id="story-text">Welcome to the open world of the Ramayana. Your journey begins now...</div>
         <div id="dialogue"></div>
@@ -78,11 +79,17 @@
         </div>
     </div>
 
+    <audio id="click-sound" src="https://freesound.org/data/previews/522/522264_1319205-lq.mp3"></audio>
+    <audio id="background-music" loop>
+        <source src="https://freesound.org/data/previews/202/202122_1697304-lq.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
         const areas = [
             {
                 name: "Forest of Chitrakoot",
                 description: "A dense forest filled with wildlife and a serene riverbank. You may encounter Sages here.",
+                background: "linear-gradient(to bottom, #90ee90, #006400)",
                 dialogues: [
                     "A sage greets you: 'Welcome, Prince Rama. How can I help you on your journey?'",
                     "You hear the rustling of leaves. Could it be a demon or just the wind?"
@@ -92,6 +99,7 @@
             {
                 name: "Lanka",
                 description: "The island kingdom of Ravana. It is heavily guarded and dangerous.",
+                background: "linear-gradient(to bottom, #ff6347, #8b0000)",
                 dialogues: [
                     "A guard spots you: 'Halt! Who dares enter Lanka?'",
                     "You see the golden palace of Ravana shining in the distance."
@@ -101,6 +109,7 @@
             {
                 name: "Ayodhya",
                 description: "The prosperous kingdom of Rama. People are joyous and welcoming.",
+                background: "linear-gradient(to bottom, #ffd700, #ff8c00)",
                 dialogues: [
                     "A villager bows to you: 'Prince Rama, when will you return to the throne?'",
                     "You hear the songs of celebration as you walk through the streets."
@@ -112,10 +121,17 @@
         let exploredAreas = [];
         let currentArea = null;
 
+        function playSound() {
+            const sound = document.getElementById("click-sound");
+            sound.currentTime = 0;
+            sound.play();
+        }
+
         function exploreArea() {
+            playSound();
             const randomIndex = Math.floor(Math.random() * areas.length);
             currentArea = areas[randomIndex];
-
+            document.body.style.background = currentArea.background;
             document.getElementById("story-text").textContent = 
                 `You arrive at ${currentArea.name}. ${currentArea.description}`;
             
@@ -142,6 +158,7 @@
         }
 
         function viewMap() {
+            playSound();
             const mapText = exploredAreas.length
                 ? `You have explored: ${exploredAreas.join(", ")}.`
                 : "You haven't explored any areas yet.";
@@ -170,8 +187,26 @@
             }
         }
 
-        // Initialize the game
+        function showMenu() {
+            const options = areas.map(area => `<button onclick="jumpToArea('${area.name}')">${area.name}</button>`).join("");
+            document.querySelector(".choices").innerHTML = `
+                ${options}
+                <button onclick="exploreArea()">Back to Game</button>
+            `;
+        }
+
+        function jumpToArea(areaName) {
+            playSound();
+            const area = areas.find(a => a.name === areaName);
+            if (area) {
+                currentArea = area;
+                exploreArea();
+            }
+        }
+
+        // Initialize
         loadCheckpoint();
+        document.getElementById("background-music").play();
     </script>
 </body>
 </html>
