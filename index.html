@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramayan By Rajveer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #f7e9d7, #d8a764);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        #game-container {
+            width: 95%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1s;
+        }
+        #story-text {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .choices {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        button {
+            background-color: #d88f40;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background-color: #b36d27;
+            transform: scale(1.05);
+        }
+        #dialogue {
+            font-style: italic;
+            margin: 10px 0 20px 0;
+            color: #555;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="story-text">Welcome to the open world of the Ramayana. Your journey begins now...</div>
+        <div id="dialogue"></div>
+        <div class="choices">
+            <button onclick="exploreArea()">Explore Nearby Area</button>
+            <button onclick="viewMap()">View Map</button>
+        </div>
+    </div>
+
+    <script>
+        const areas = [
+            {
+                name: "Forest of Chitrakoot",
+                description: "A dense forest filled with wildlife and a serene riverbank. You may encounter Sages here.",
+                dialogues: [
+                    "A sage greets you: 'Welcome, Prince Rama. How can I help you on your journey?'",
+                    "You hear the rustling of leaves. Could it be a demon or just the wind?"
+                ],
+                actions: ["Rest at the riverbank", "Search for herbs", "Meditate under a tree"]
+            },
+            {
+                name: "Lanka",
+                description: "The island kingdom of Ravana. It is heavily guarded and dangerous.",
+                dialogues: [
+                    "A guard spots you: 'Halt! Who dares enter Lanka?'",
+                    "You see the golden palace of Ravana shining in the distance."
+                ],
+                actions: ["Sneak into the palace", "Challenge a guard", "Find Sita"]
+            },
+            {
+                name: "Ayodhya",
+                description: "The prosperous kingdom of Rama. People are joyous and welcoming.",
+                dialogues: [
+                    "A villager bows to you: 'Prince Rama, when will you return to the throne?'",
+                    "You hear the songs of celebration as you walk through the streets."
+                ],
+                actions: ["Speak with the villagers", "Visit the palace", "Rest at the temple"]
+            }
+        ];
+
+        let exploredAreas = [];
+        let currentArea = null;
+
+        function exploreArea() {
+            const randomIndex = Math.floor(Math.random() * areas.length);
+            currentArea = areas[randomIndex];
+
+            document.getElementById("story-text").textContent = 
+                `You arrive at ${currentArea.name}. ${currentArea.description}`;
+            
+            document.getElementById("dialogue").textContent = 
+                currentArea.dialogues[Math.floor(Math.random() * currentArea.dialogues.length)];
+            
+            const actions = currentArea.actions
+                .map(action => `<button onclick="performAction('${action}')">${action}</button>`)
+                .join("");
+
+            document.querySelector(".choices").innerHTML = `
+                ${actions}
+                <button onclick="exploreArea()">Explore Another Area</button>
+                <button onclick="viewMap()">View Map</button>
+            `;
+
+            saveCheckpoint(currentArea.name);
+            if (!exploredAreas.includes(currentArea.name)) exploredAreas.push(currentArea.name);
+        }
+
+        function performAction(action) {
+            alert(`You chose to: ${action}`);
+            exploreArea();
+        }
+
+        function viewMap() {
+            const mapText = exploredAreas.length
+                ? `You have explored: ${exploredAreas.join(", ")}.`
+                : "You haven't explored any areas yet.";
+
+            document.getElementById("story-text").textContent = mapText;
+            document.querySelector(".choices").innerHTML = `
+                <button onclick="exploreArea()">Explore Another Area</button>
+            `;
+        }
+
+        function saveCheckpoint(areaName) {
+            localStorage.setItem("ramayanaOpenWorldCheckpoint", areaName);
+        }
+
+        function loadCheckpoint() {
+            const lastArea = localStorage.getItem("ramayanaOpenWorldCheckpoint");
+            if (lastArea) {
+                const area = areas.find(a => a.name === lastArea);
+                if (area) {
+                    currentArea = area;
+                    exploredAreas.push(area.name);
+                    exploreArea();
+                }
+            } else {
+                exploreArea();
+            }
+        }
+
+        // Initialize the game
+        loadCheckpoint();
+    </script>
+</body>
+</html>
